@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="toxic">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SHADOW NODE // Cyber Tracker</title>
+<meta name="description" content="SHADOW NODE — a cyberpunk anime intelligence terminal with live CLI, CTF mechanics and bilingual AR/EN interface." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◈</text></svg>" />
+<link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+
+<!-- ambient background layers -->
+<canvas id="matrix-rain"></canvas>
+<div class="aurora"></div>
+<div class="aurora b"></div>
+<div class="grid-veil"></div>
+
+<div class="shell">
+
+  <!-- ============================================================ HUD -->
+  <header class="hud glass">
+    <div class="sheen"></div>
+    <div class="brand">
+      <!-- SHADOW NODE sigil -->
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <metadata id="node-sigil-meta">
+          sigil:shadow-node/1.0
+          clearance:OMEGA
+          access_token:SN{r00t_4cc3ss_gr4nt3d}
+          note:entity_metadata_is_never_validated
+        </metadata>
+        <defs>
+          <linearGradient id="gg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="var(--neon, #39ff14)" />
+            <stop offset="100%" stop-color="var(--neon2, #00e5ff)" />
+          </linearGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="3" result="b" /><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <polygon points="50,4 92,26 92,74 50,96 8,74 8,26" fill="none" stroke="url(#gg)" stroke-width="3" filter="url(#glow)" />
+        <polygon points="50,18 79,34 79,66 50,82 21,66 21,34" fill="rgba(57,255,20,.06)" stroke="url(#gg)" stroke-width="1.2" opacity=".8" />
+        <path d="M38 66 L38 34 L50 50 L62 34 L62 66" fill="none" stroke="url(#gg)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" />
+        <circle cx="50" cy="50" r="3.2" fill="var(--neon,#39ff14)" />
+      </svg>
+      <div class="brand-txt">
+        <b class="glitch" data-text="SHADOW NODE">SHADOW NODE</b>
+        <span data-i18n="brand.sub">CYBER-TRACKER // INTELLIGENCE TERMINAL v1.0</span>
+      </div>
+    </div>
+
+    <div class="hud-stats" id="hud-stats">
+      <div class="stat"><i data-i18n="stat.targets">ACTIVE TARGETS</i><b id="stat-total">0</b></div>
+      <div class="stat"><i data-i18n="stat.watching">WATCHING</i><b id="stat-watching">0</b></div>
+      <div class="stat"><i data-i18n="stat.episodes">EPISODES</i><b id="stat-eps">0</b></div>
+      <div class="stat small"><i data-i18n="stat.hours">HOURS</i><b id="stat-hours">0</b></div>
+      <div class="stat small"><i data-i18n="stat.flags">FLAGS</i><b id="stat-flags">0/5</b></div>
+    </div>
+
+    <div class="hud-controls">
+      <div class="status-line"><span class="live-dot"></span><span id="uplink">UPLINK …</span></div>
+      <div class="lang-toggle" role="group" aria-label="language">
+        <button id="lang-en" class="on" data-lang="en">EN</button>
+        <button id="lang-ar" data-lang="ar" class="ar">ع</button>
+      </div>
+      <button class="icon-btn" id="theme-btn" title="themes">◈ <span data-i18n="btn.themes">THEMES</span></button>
+      <button class="icon-btn" id="ctf-btn" title="CTF">⚑ <span data-i18n="btn.ctf">CTF</span></button>
+    </div>
+  </header>
+
+  <!-- theme picker popover -->
+  <div class="theme-pop glass" id="theme-pop">
+    <div class="sheen"></div>
+    <div style="font-family:var(--font-term);font-size:10px;color:var(--txt-faint);letter-spacing:1.4px;margin-bottom:10px" data-i18n="theme.title">
+      NEON MATRIX // SOLVE CTF TO UNLOCK
+    </div>
+    <div class="theme-grid" id="theme-grid"></div>
+  </div>
+
+  <!-- ======================================================== MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- ---------------------------------------- ACTIVE TARGETS -->
+    <section class="panel glass col">
+      <div class="sheen"></div>
+      <div class="panel-head">
+        <h2 data-i18n="targets.title">ACTIVE TARGETS</h2>
+        <span class="tag" id="targets-count">0</span>
+        <div class="spacer"></div>
+        <button class="icon-btn" id="sync-btn" title="resync">⟳ <span data-i18n="btn.resync">RESYNC</span></button>
+        <button class="icon-btn hot" id="add-btn">＋ <span data-i18n="btn.add">ACQUIRE</span></button>
+      </div>
+      <div class="chipbar" id="filters">
+        <button class="chip on" data-filter="all" data-i18n="filter.all">ALL</button>
+        <button class="chip" data-filter="watching" data-i18n="filter.watching">WATCHING</button>
+        <button class="chip" data-filter="completed" data-i18n="filter.completed">COMPLETED</button>
+        <button class="chip" data-filter="paused" data-i18n="filter.paused">PAUSED</button>
+        <button class="chip" data-filter="planned" data-i18n="filter.planned">PLANNED</button>
+      </div>
+      <div class="panel-body">
+        <div class="cards" id="cards"></div>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------- INTEL SIDE -->
+    <aside class="panel glass col">
+      <div class="sheen"></div>
+      <div class="panel-head">
+        <h2 data-i18n="intel.title">INTERCEPTED INTEL</h2>
+        <span class="tag" id="intel-source">anilist</span>
+        <div class="spacer"></div>
+        <button class="icon-btn" id="sniff-btn" title="sniff --latest">⇣ <span data-i18n="btn.sniff">SNIFF</span></button>
+      </div>
+      <div class="tabs" id="intel-tabs">
+        <button class="tab on" data-tab="scan" data-i18n="tab.scan">SCAN</button>
+        <button class="tab" data-tab="feed" data-i18n="tab.feed">FEED</button>
+        <button class="tab" data-tab="packets" data-i18n="tab.packets">PACKETS</button>
+        <button class="tab" data-tab="ctf" data-i18n="tab.ctf">CTF</button>
+      </div>
+
+      <!-- SCAN TAB -->
+      <div class="tab-page" data-page="scan" style="display:flex;flex-direction:column;min-height:0;flex:1">
+        <div class="search-row">
+          <input class="input" id="scan-input" placeholder="scan --target &quot;TO BE HERO X&quot;" dir="auto" />
+          <button class="btn" id="scan-btn" data-i18n="btn.scan">SCAN</button>
+        </div>
+        <div class="panel-body" id="scan-results"></div>
+      </div>
+
+      <!-- FEED TAB -->
+      <div class="tab-page" data-page="feed" style="display:none;flex-direction:column;min-height:0;flex:1">
+        <div class="panel-body" id="feed-results"></div>
+      </div>
+
+      <!-- PACKETS TAB -->
+      <div class="tab-page" data-page="packets" style="display:none;flex-direction:column;min-height:0;flex:1">
+        <div class="panel-body packets" id="packet-results"></div>
+      </div>
+
+      <!-- CTF TAB -->
+      <div class="tab-page" data-page="ctf" style="display:none;flex-direction:column;min-height:0;flex:1">
+        <div class="panel-body" id="ctf-results"></div>
+        <div style="padding:0 14px 14px;display:flex;gap:8px">
+          <input class="input" id="flag-input" placeholder="SN{...}" dir="ltr" style="direction:ltr" />
+          <button class="btn" id="flag-btn" data-i18n="btn.submit">SUBMIT</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ====================================================== TERMINAL -->
+  <section class="dock glass" id="dock">
+    <div class="sheen"></div>
+    <div class="dock-grip" id="dock-grip" title="resize"></div>
+    <div class="dock-head">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div class="dock-title">
+        <b>root@shadow-node</b>:<span class="muted">~</span>$ <span data-i18n="term.title">COMMAND TERMINAL</span>
+      </div>
+      <div class="spacer"></div>
+      <div class="dock-title" id="term-target" style="color:var(--neon2)"></div>
+      <button class="dock-btn" id="term-help" title="help">?</button>
+      <button class="dock-btn" id="term-clear" title="clear">⌫</button>
+      <button class="dock-btn" id="term-collapse" title="collapse">–</button>
+    </div>
+    <div class="term" id="term"></div>
+    <div class="term-input-line">
+      <span class="prompt"><span class="u">root</span><span class="p">@</span><span class="u">shadow-node</span><span class="p">:</span>~$&nbsp;</span>
+      <input class="term-input" id="term-input" autocomplete="off" spellcheck="false"
+             placeholder="type a command… try: help" dir="ltr" style="direction:ltr" />
+      <span class="term-hint" id="term-hint">TAB ▸ complete · ↑↓ ▸ history</span>
+      <div class="ac-pop" id="ac-pop"></div>
+    </div>
+  </section>
+</div>
+
+<!-- overlays -->
+<div class="pulse-layer"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<div class="loader-overlay" id="loader">
+  <div class="loader-box">
+    <div class="loader-stage">
+      <svg class="goo" viewBox="0 0 190 120">
+        <defs>
+          <filter id="goo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="blur" />
+            <feColorMatrix in="blur" mode="matrix"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10" result="goo" />
+            <feBlend in="SourceGraphic" in2="goo" />
+          </filter>
+        </defs>
+        <g filter="url(#goo)" fill="var(--neon,#39ff14)">
+          <circle cx="60" cy="60" r="26" opacity=".9" />
+          <circle cx="100" cy="60" r="26" fill="var(--neon2,#00e5ff)" opacity=".85" />
+          <circle cx="140" cy="60" r="22" opacity=".8" />
+          <circle cx="80" cy="60" r="14" fill="var(--neon2,#00e5ff)" opacity=".7" />
+        </g>
+      </svg>
+    </div>
+    <div class="loader-title" id="loader-title">DECRYPTING INTEL</div>
+    <div class="loader-sub" id="loader-sub">establishing secure channel…</div>
+    <div class="loader-bar"><i></i></div>
+    <div class="decrypt-stream" id="loader-stream"></div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="modal-wrap">
+  <div class="modal glass" id="modal">
+    <div class="sheen"></div>
+    <div class="modal-head">
+      <h3 id="modal-title">TARGET</h3>
+      <div class="spacer" style="flex:1"></div>
+      <button class="dock-btn" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- boot sequence -->
+<div class="boot" id="boot">
+  <div class="boot-inner" id="boot-log"></div>
+  <div class="boot-skip">[ press any key to skip ]</div>
+</div>
+
+<!--
+  ============================================================================
+  NODE_INTEL :: diagnostic fragment (operator: do not commit to production)
+  fragment_id : 0x1A2F
+  encoding    : base64
+  payload     : U057eTB1X3IzNGRfdGgzX3MwdXJjM30=
+  hint        : ZmxhZyBsaXZlcyBpbjogdmlldy1zb3VyY2UsIG5lYXIgdGVybWluYWwgbWFya3Vw
+  ============================================================================
+-->
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
